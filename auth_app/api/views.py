@@ -1,10 +1,11 @@
+from django.contrib.auth import authenticate
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from auth_app.api.serializers import RegistrationSerializer
+from auth_app.api.serializers import LoginSerializer, RegistrationSerializer
 
 
 class RegistrationView(APIView):
@@ -24,3 +25,17 @@ class RegistrationView(APIView):
             "email": user.email,
             "user_id": user.id,
         }
+
+
+class LoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = authenticate(request, **serializer.validated_data)
+        if user is None:
+            return Response(
+                {"detail": "Invalid credentials."}, status=status.HTTP_400_BAD_REQUEST
+            )
+        return Response(RegistrationView()._auth_payload(user), status=status.HTTP_200_OK)
