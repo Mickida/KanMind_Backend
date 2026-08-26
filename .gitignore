@@ -1,0 +1,16 @@
+venv/
+db.sqlite3
+__pycache__/
+*.pyc
+.env
+htmlcov/
+.coverage
+
+docs/superpowers/
+.claude/
+CLAUDE.md
+
+**/tests/
+conftest.py
+pytest.ini
+setup.cfg
