@@ -9,6 +9,7 @@ from kanban_app.api.permissions import IsBoardMember
 from kanban_app.api.serializers import (
     BoardDetailSerializer,
     BoardListSerializer,
+    BoardUpdateSerializer,
     UserShortSerializer,
 )
 from kanban_app.models import Board
@@ -26,6 +27,8 @@ class BoardViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == "retrieve":
             return BoardDetailSerializer
+        if self.action == "partial_update":
+            return BoardUpdateSerializer
         return BoardListSerializer
 
     def _annotated_queryset(self, user):
