@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from auth_app.models import User
-from kanban_app.api.permissions import IsBoardMember
+from kanban_app.api.permissions import IsBoardMember, IsBoardOwner
 from kanban_app.api.serializers import (
     BoardDetailSerializer,
     BoardListSerializer,
@@ -17,7 +17,11 @@ from kanban_app.models import Board
 
 class BoardViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
-    permission_classes = [IsAuthenticated, IsBoardMember]
+
+    def get_permissions(self):
+        if self.action == "destroy":
+            return [IsAuthenticated(), IsBoardOwner()]
+        return [IsAuthenticated(), IsBoardMember()]
 
     def get_queryset(self):
         if self.action == "list":
