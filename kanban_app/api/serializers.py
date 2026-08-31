@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from auth_app.models import User
-from kanban_app.models import Board
+from kanban_app.models import Board, Task
 
 
 class UserShortSerializer(serializers.ModelSerializer):
@@ -38,3 +38,33 @@ class BoardListSerializer(serializers.ModelSerializer):
         board = Board.objects.create(**validated_data)
         board.members.set(members)
         return board
+
+
+class TaskNestedSerializer(serializers.ModelSerializer):
+    assignee = UserShortSerializer(read_only=True)
+    reviewer = UserShortSerializer(read_only=True)
+    comments_count = serializers.IntegerField(source="comments.count", read_only=True)
+
+    class Meta:
+        model = Task
+        fields = [
+            "id",
+            "title",
+            "description",
+            "status",
+            "priority",
+            "assignee",
+            "reviewer",
+            "due_date",
+            "comments_count",
+        ]
+
+
+class BoardDetailSerializer(serializers.ModelSerializer):
+    owner_id = serializers.IntegerField(source="owner.id", read_only=True)
+    members = UserShortSerializer(many=True, read_only=True)
+    tasks = TaskNestedSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Board
+        fields = ["id", "title", "owner_id", "members", "tasks"]

@@ -5,17 +5,30 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from auth_app.models import User
-from kanban_app.api.serializers import BoardListSerializer, UserShortSerializer
+from kanban_app.api.permissions import IsBoardMember
+from kanban_app.api.serializers import (
+    BoardDetailSerializer,
+    BoardListSerializer,
+    UserShortSerializer,
+)
 from kanban_app.models import Board
 
 
 class BoardViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
-    permission_classes = [IsAuthenticated]
-    serializer_class = BoardListSerializer
+    permission_classes = [IsAuthenticated, IsBoardMember]
 
     def get_queryset(self):
-        user = self.request.user
+        if self.action == "list":
+            return self._annotated_queryset(self.request.user)
+        return Board.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return BoardDetailSerializer
+        return BoardListSerializer
+
+    def _annotated_queryset(self, user):
         return (
             Board.objects.filter(Q(owner=user) | Q(members=user))
             .distinct()
@@ -35,7 +48,7 @@ class BoardViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(owner=request.user)
-        board = self.get_queryset().get(pk=serializer.instance.pk)
+        board = self._annotated_queryset(request.user).get(pk=serializer.instance.pk)
         return Response(self.get_serializer(board).data, status=status.HTTP_201_CREATED)
 
 
