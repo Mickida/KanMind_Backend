@@ -1,5 +1,5 @@
 from django.db.models import Count, Q
-from rest_framework import status, viewsets
+from rest_framework import mixins, status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -10,9 +10,10 @@ from kanban_app.api.serializers import (
     BoardDetailSerializer,
     BoardListSerializer,
     BoardUpdateSerializer,
+    TaskSerializer,
     UserShortSerializer,
 )
-from kanban_app.models import Board
+from kanban_app.models import Board, Task
 
 
 class BoardViewSet(viewsets.ModelViewSet):
@@ -72,3 +73,18 @@ class EmailCheckView(APIView):
         if user is None:
             return Response({"detail": "Email not found."}, status=status.HTTP_404_NOT_FOUND)
         return Response(UserShortSerializer(user).data, status=status.HTTP_200_OK)
+
+
+class TaskViewSet(
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    http_method_names = ["post", "patch", "delete"]
+    queryset = Task.objects.all()
+    serializer_class = TaskSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)

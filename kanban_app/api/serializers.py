@@ -60,6 +60,49 @@ class TaskNestedSerializer(serializers.ModelSerializer):
         ]
 
 
+class TaskSerializer(serializers.ModelSerializer):
+    assignee = UserShortSerializer(read_only=True)
+    reviewer = UserShortSerializer(read_only=True)
+    assignee_id = serializers.PrimaryKeyRelatedField(
+        source="assignee", queryset=User.objects.all(), required=False, allow_null=True
+    )
+    reviewer_id = serializers.PrimaryKeyRelatedField(
+        source="reviewer", queryset=User.objects.all(), required=False, allow_null=True
+    )
+    comments_count = serializers.IntegerField(source="comments.count", read_only=True)
+
+    class Meta:
+        model = Task
+        fields = [
+            "id",
+            "board",
+            "title",
+            "description",
+            "status",
+            "priority",
+            "assignee",
+            "reviewer",
+            "assignee_id",
+            "reviewer_id",
+            "due_date",
+            "comments_count",
+        ]
+
+    def validate(self, attrs):
+        board = attrs.get("board") or getattr(self.instance, "board", None)
+        user = self.context["request"].user
+        if not self._is_board_member(board, user):
+            raise serializers.ValidationError("You must be a member of this board.")
+        for role in ("assignee", "reviewer"):
+            person = attrs.get(role)
+            if person and not self._is_board_member(board, person):
+                raise serializers.ValidationError(f"{role} must be a member of the board.")
+        return attrs
+
+    def _is_board_member(self, board, person):
+        return board.owner_id == person.id or board.members.filter(id=person.id).exists()
+
+
 class BoardDetailSerializer(serializers.ModelSerializer):
     owner_id = serializers.IntegerField(source="owner.id", read_only=True)
     members = UserShortSerializer(many=True, read_only=True)
