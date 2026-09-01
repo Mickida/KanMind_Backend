@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from auth_app.models import User
-from kanban_app.api.permissions import IsBoardMember, IsBoardOwner
+from kanban_app.api.permissions import IsBoardMember, IsBoardOwner, IsTaskBoardMember
 from kanban_app.api.serializers import (
     BoardDetailSerializer,
     BoardListSerializer,
@@ -84,7 +84,18 @@ class TaskViewSet(
     http_method_names = ["post", "patch", "delete"]
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
-    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action == "partial_update":
+            return [IsAuthenticated(), IsTaskBoardMember()]
+        return [IsAuthenticated()]
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
+
+    def partial_update(self, request, *args, **kwargs):
+        if "board" in request.data:
+            return Response(
+                {"detail": "board cannot be changed."}, status=status.HTTP_400_BAD_REQUEST
+            )
+        return super().partial_update(request, *args, **kwargs)
