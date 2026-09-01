@@ -1,11 +1,16 @@
 from django.db.models import Count, Q
-from rest_framework import mixins, status, viewsets
+from rest_framework import generics, mixins, status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from auth_app.models import User
-from kanban_app.api.permissions import IsBoardMember, IsBoardOwner, IsTaskBoardMember
+from kanban_app.api.permissions import (
+    IsBoardMember,
+    IsBoardOwner,
+    IsTaskBoardMember,
+    IsTaskCreatorOrBoardOwner,
+)
 from kanban_app.api.serializers import (
     BoardDetailSerializer,
     BoardListSerializer,
@@ -88,6 +93,8 @@ class TaskViewSet(
     def get_permissions(self):
         if self.action == "partial_update":
             return [IsAuthenticated(), IsTaskBoardMember()]
+        if self.action == "destroy":
+            return [IsAuthenticated(), IsTaskCreatorOrBoardOwner()]
         return [IsAuthenticated()]
 
     def perform_create(self, serializer):
@@ -99,3 +106,19 @@ class TaskViewSet(
                 {"detail": "board cannot be changed."}, status=status.HTTP_400_BAD_REQUEST
             )
         return super().partial_update(request, *args, **kwargs)
+
+
+class AssignedToMeView(generics.ListAPIView):
+    serializer_class = TaskSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Task.objects.filter(assignee=self.request.user)
+
+
+class ReviewingView(generics.ListAPIView):
+    serializer_class = TaskSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Task.objects.filter(reviewer=self.request.user)
