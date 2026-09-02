@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from auth_app.models import User
-from kanban_app.models import Board, Task
+from kanban_app.models import Board, Comment, Task
 
 
 class UserShortSerializer(serializers.ModelSerializer):
@@ -111,6 +111,14 @@ class BoardDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Board
         fields = ["id", "title", "owner_id", "members", "tasks"]
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.CharField(source="author.fullname", read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ["id", "created_at", "author", "content"]
 
 
 class BoardUpdateSerializer(serializers.ModelSerializer):

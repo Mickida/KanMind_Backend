@@ -1,5 +1,7 @@
 from django.db.models import Count, Q
+from django.shortcuts import get_object_or_404
 from rest_framework import generics, mixins, status, viewsets
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -15,6 +17,7 @@ from kanban_app.api.serializers import (
     BoardDetailSerializer,
     BoardListSerializer,
     BoardUpdateSerializer,
+    CommentSerializer,
     TaskSerializer,
     UserShortSerializer,
 )
@@ -106,6 +109,28 @@ class TaskViewSet(
                 {"detail": "board cannot be changed."}, status=status.HTTP_400_BAD_REQUEST
             )
         return super().partial_update(request, *args, **kwargs)
+
+
+class CommentListCreateView(generics.ListCreateAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_task(self):
+        task = get_object_or_404(Task, pk=self.kwargs["task_id"])
+        board = task.board
+        is_member = (
+            board.owner_id == self.request.user.id
+            or board.members.filter(id=self.request.user.id).exists()
+        )
+        if not is_member:
+            raise PermissionDenied("You must be a member of this board.")
+        return task
+
+    def get_queryset(self):
+        return self.get_task().comments.select_related("author").all()
+
+    def perform_create(self, serializer):
+        serializer.save(task=self.get_task(), author=self.request.user)
 
 
 class AssignedToMeView(generics.ListAPIView):
