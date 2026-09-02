@@ -5,12 +5,3 @@ __pycache__/
 .env
 htmlcov/
 .coverage
-
-docs/superpowers/
-.claude/
-CLAUDE.md
-
-**/tests/
-conftest.py
-pytest.ini
-setup.cfg
