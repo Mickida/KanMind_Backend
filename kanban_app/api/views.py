@@ -10,6 +10,7 @@ from auth_app.models import User
 from kanban_app.api.permissions import (
     IsBoardMember,
     IsBoardOwner,
+    IsCommentAuthor,
     IsTaskBoardMember,
     IsTaskCreatorOrBoardOwner,
 )
@@ -21,7 +22,7 @@ from kanban_app.api.serializers import (
     TaskSerializer,
     UserShortSerializer,
 )
-from kanban_app.models import Board, Task
+from kanban_app.models import Board, Comment, Task
 
 
 class BoardViewSet(viewsets.ModelViewSet):
@@ -131,6 +132,15 @@ class CommentListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(task=self.get_task(), author=self.request.user)
+
+
+class CommentDeleteView(generics.DestroyAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated, IsCommentAuthor]
+    lookup_url_kwarg = "comment_id"
+
+    def get_queryset(self):
+        return Comment.objects.filter(task_id=self.kwargs["task_id"])
 
 
 class AssignedToMeView(generics.ListAPIView):

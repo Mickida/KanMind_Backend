@@ -4,6 +4,7 @@ from rest_framework.routers import DefaultRouter
 from kanban_app.api.views import (
     AssignedToMeView,
     BoardViewSet,
+    CommentDeleteView,
     CommentListCreateView,
     EmailCheckView,
     ReviewingView,
@@ -22,5 +23,10 @@ urlpatterns = [
         "tasks/<int:task_id>/comments/",
         CommentListCreateView.as_view(),
         name="task-comments",
+    ),
+    path(
+        "tasks/<int:task_id>/comments/<int:comment_id>/",
+        CommentDeleteView.as_view(),
+        name="task-comment-detail",
     ),
 ] + router.urls
