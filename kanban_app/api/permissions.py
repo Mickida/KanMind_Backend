@@ -1,4 +1,17 @@
-from rest_framework.permissions import BasePermission
+from rest_framework.permissions import SAFE_METHODS, BasePermission
+
+GUEST_EMAIL = "guest@kanmind.de"
+
+
+class IsNotGuest(BasePermission):
+    """Allows read access for everyone, blocks write actions for the guest demo account."""
+
+    message = "The guest account is read-only."
+
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            return True
+        return request.user.email != GUEST_EMAIL
 
 
 class IsBoardMember(BasePermission):

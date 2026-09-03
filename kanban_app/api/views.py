@@ -11,6 +11,7 @@ from kanban_app.api.permissions import (
     IsBoardMember,
     IsBoardOwner,
     IsCommentAuthor,
+    IsNotGuest,
     IsTaskBoardMember,
     IsTaskCreatorOrBoardOwner,
 )
@@ -30,8 +31,8 @@ class BoardViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action == "destroy":
-            return [IsAuthenticated(), IsBoardOwner()]
-        return [IsAuthenticated(), IsBoardMember()]
+            return [IsAuthenticated(), IsBoardOwner(), IsNotGuest()]
+        return [IsAuthenticated(), IsBoardMember(), IsNotGuest()]
 
     def get_queryset(self):
         if self.action == "list":
@@ -96,10 +97,10 @@ class TaskViewSet(
 
     def get_permissions(self):
         if self.action == "partial_update":
-            return [IsAuthenticated(), IsTaskBoardMember()]
+            return [IsAuthenticated(), IsTaskBoardMember(), IsNotGuest()]
         if self.action == "destroy":
-            return [IsAuthenticated(), IsTaskCreatorOrBoardOwner()]
-        return [IsAuthenticated()]
+            return [IsAuthenticated(), IsTaskCreatorOrBoardOwner(), IsNotGuest()]
+        return [IsAuthenticated(), IsNotGuest()]
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
@@ -114,7 +115,7 @@ class TaskViewSet(
 
 class CommentListCreateView(generics.ListCreateAPIView):
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsNotGuest]
 
     def get_task(self):
         task = get_object_or_404(Task, pk=self.kwargs["task_id"])
@@ -136,7 +137,7 @@ class CommentListCreateView(generics.ListCreateAPIView):
 
 class CommentDeleteView(generics.DestroyAPIView):
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticated, IsCommentAuthor]
+    permission_classes = [IsAuthenticated, IsCommentAuthor, IsNotGuest]
     lookup_url_kwarg = "comment_id"
 
     def get_queryset(self):
