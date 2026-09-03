@@ -12,6 +12,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
         fields = ["fullname", "email", "password", "repeated_password"]
 
     def validate_email(self, value):
+        value = value.lower()
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError("This email is already registered.")
         return value
@@ -29,3 +30,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
+
+    def validate_email(self, value):
+        return value.lower()

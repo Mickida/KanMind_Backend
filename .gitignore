@@ -5,3 +5,4 @@ __pycache__/
 .env
 htmlcov/
 .coverage
+kanban_app/management/
