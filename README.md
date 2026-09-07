@@ -42,6 +42,8 @@ The API is available under http://127.0.0.1:8000/api/
 - Login uses a custom User model with email instead of username.
 - Auth works with tokens. Get a token from POST /api/login/ or POST /api/registration/, then send it with every request as header: Authorization: Token <token>
 - PATCH /api/boards/{id}/ returns a different response shape than GET /api/boards/{id}/ (owner_data/members_data instead of owner_id/members). This is intentional, matches the API spec.
+- On tasks, assignee_id/reviewer_id are write-only. Use them to set the assignee/reviewer; the response always returns the nested assignee/reviewer objects instead.
+- A guest demo account (guest@kanmind.de) exists and is restricted to read-only access on all endpoints.
 - Built and tested with Python 3.14.
 
 ## Requirements
