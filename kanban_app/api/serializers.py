@@ -98,9 +98,6 @@ class TaskSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         board = attrs.get("board") or getattr(self.instance, "board", None)
-        user = self.context["request"].user
-        if not self._is_board_member(board, user):
-            raise serializers.ValidationError("You must be a member of this board.")
         for role in ("assignee", "reviewer"):
             person = attrs.get(role)
             if person and not self._is_board_member(board, person):

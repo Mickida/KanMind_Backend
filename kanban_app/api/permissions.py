@@ -1,5 +1,7 @@
 from rest_framework.permissions import SAFE_METHODS, BasePermission
 
+from kanban_app.models import Board
+
 GUEST_EMAIL = "guest@kanmind.de"
 
 
@@ -25,6 +27,17 @@ class IsBoardMember(BasePermission):
 class IsBoardOwner(BasePermission):
     def has_object_permission(self, request, view, obj):
         return obj.owner_id == request.user.id
+
+
+class IsBoardMemberToCreateTask(BasePermission):
+    def has_permission(self, request, view):
+        board = Board.objects.filter(pk=request.data.get("board")).first()
+        if board is None:
+            return True
+        return (
+            board.owner_id == request.user.id
+            or board.members.filter(id=request.user.id).exists()
+        )
 
 
 class IsTaskBoardMember(BasePermission):

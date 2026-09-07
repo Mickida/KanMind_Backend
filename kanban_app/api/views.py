@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 from auth_app.models import User
 from kanban_app.api.permissions import (
     IsBoardMember,
+    IsBoardMemberToCreateTask,
     IsBoardOwner,
     IsCommentAuthor,
     IsNotGuest,
@@ -100,7 +101,7 @@ class TaskViewSet(
             return [IsAuthenticated(), IsTaskBoardMember(), IsNotGuest()]
         if self.action == "destroy":
             return [IsAuthenticated(), IsTaskCreatorOrBoardOwner(), IsNotGuest()]
-        return [IsAuthenticated(), IsNotGuest()]
+        return [IsAuthenticated(), IsBoardMemberToCreateTask(), IsNotGuest()]
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
