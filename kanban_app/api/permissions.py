@@ -1,3 +1,4 @@
+from rest_framework.exceptions import NotFound
 from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 from kanban_app.models import Board
@@ -37,9 +38,11 @@ class IsBoardMemberToCreateTask(BasePermission):
     """Blocks task creation on a board the requesting user isn't a member of."""
 
     def has_permission(self, request, view):
+        if "board" not in request.data:
+            return True
         board = Board.objects.filter(pk=request.data.get("board")).first()
         if board is None:
-            return True
+            raise NotFound("Board not found.")
         return (
             board.owner_id == request.user.id
             or board.members.filter(id=request.user.id).exists()
