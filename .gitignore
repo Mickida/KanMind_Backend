@@ -6,3 +6,9 @@ __pycache__/
 htmlcov/
 .coverage
 kanban_app/management/
+
+# Tests (local only, not part of the submission)
+tests/
+test_*.py
+*_test.py
+.pytest_cache/
