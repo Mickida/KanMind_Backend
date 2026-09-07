@@ -64,10 +64,18 @@ class TaskSerializer(serializers.ModelSerializer):
     assignee = UserShortSerializer(read_only=True)
     reviewer = UserShortSerializer(read_only=True)
     assignee_id = serializers.PrimaryKeyRelatedField(
-        source="assignee", queryset=User.objects.all(), required=False, allow_null=True
+        source="assignee",
+        queryset=User.objects.all(),
+        required=False,
+        allow_null=True,
+        write_only=True,
     )
     reviewer_id = serializers.PrimaryKeyRelatedField(
-        source="reviewer", queryset=User.objects.all(), required=False, allow_null=True
+        source="reviewer",
+        queryset=User.objects.all(),
+        required=False,
+        allow_null=True,
+        write_only=True,
     )
     comments_count = serializers.IntegerField(source="comments.count", read_only=True)
 
