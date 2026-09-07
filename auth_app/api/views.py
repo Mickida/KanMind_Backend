@@ -8,6 +8,16 @@ from rest_framework.views import APIView
 from auth_app.api.serializers import LoginSerializer, RegistrationSerializer
 
 
+def build_auth_payload(user):
+    token, _ = Token.objects.get_or_create(user=user)
+    return {
+        "token": token.key,
+        "fullname": user.fullname,
+        "email": user.email,
+        "user_id": user.id,
+    }
+
+
 class RegistrationView(APIView):
     permission_classes = [AllowAny]
 
@@ -15,16 +25,7 @@ class RegistrationView(APIView):
         serializer = RegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        return Response(self._auth_payload(user), status=status.HTTP_201_CREATED)
-
-    def _auth_payload(self, user):
-        token, _ = Token.objects.get_or_create(user=user)
-        return {
-            "token": token.key,
-            "fullname": user.fullname,
-            "email": user.email,
-            "user_id": user.id,
-        }
+        return Response(build_auth_payload(user), status=status.HTTP_201_CREATED)
 
 
 class LoginView(APIView):
@@ -38,4 +39,4 @@ class LoginView(APIView):
             return Response(
                 {"detail": "Invalid credentials."}, status=status.HTTP_400_BAD_REQUEST
             )
-        return Response(RegistrationView()._auth_payload(user), status=status.HTTP_200_OK)
+        return Response(build_auth_payload(user), status=status.HTTP_200_OK)
