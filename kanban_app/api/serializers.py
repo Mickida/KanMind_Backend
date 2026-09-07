@@ -5,12 +5,16 @@ from kanban_app.models import Board, Comment, Task
 
 
 class UserShortSerializer(serializers.ModelSerializer):
+    """Compact user representation used wherever a user is nested in a response."""
+
     class Meta:
         model = User
         fields = ["id", "email", "fullname"]
 
 
 class BoardListSerializer(serializers.ModelSerializer):
+    """Board summary with aggregated task counts, used for list and create."""
+
     member_count = serializers.IntegerField(read_only=True)
     ticket_count = serializers.IntegerField(read_only=True)
     tasks_to_do_count = serializers.IntegerField(read_only=True)
@@ -41,6 +45,8 @@ class BoardListSerializer(serializers.ModelSerializer):
 
 
 class TaskNestedSerializer(serializers.ModelSerializer):
+    """Read-only task representation nested inside a board detail response."""
+
     assignee = UserShortSerializer(read_only=True)
     reviewer = UserShortSerializer(read_only=True)
     comments_count = serializers.IntegerField(source="comments.count", read_only=True)
@@ -61,6 +67,8 @@ class TaskNestedSerializer(serializers.ModelSerializer):
 
 
 class TaskSerializer(serializers.ModelSerializer):
+    """Task create/update serializer; enforces that assignee/reviewer are board members."""
+
     assignee = UserShortSerializer(read_only=True)
     reviewer = UserShortSerializer(read_only=True)
     assignee_id = serializers.PrimaryKeyRelatedField(
@@ -109,6 +117,8 @@ class TaskSerializer(serializers.ModelSerializer):
 
 
 class BoardDetailSerializer(serializers.ModelSerializer):
+    """Full board representation with members and nested tasks, used for retrieve."""
+
     owner_id = serializers.IntegerField(source="owner.id", read_only=True)
     members = UserShortSerializer(many=True, read_only=True)
     tasks = TaskNestedSerializer(many=True, read_only=True)
@@ -119,6 +129,8 @@ class BoardDetailSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    """Comment representation for a task, showing the author's full name."""
+
     author = serializers.CharField(source="author.fullname", read_only=True)
 
     class Meta:
@@ -127,6 +139,8 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class BoardUpdateSerializer(serializers.ModelSerializer):
+    """Partial-update serializer for a board's title and member list."""
+
     owner_data = UserShortSerializer(source="owner", read_only=True)
     members_data = UserShortSerializer(source="members", many=True, read_only=True)
     members = serializers.PrimaryKeyRelatedField(

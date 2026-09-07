@@ -28,6 +28,8 @@ from kanban_app.models import Board, Comment, Task
 
 
 class BoardViewSet(viewsets.ModelViewSet):
+    """CRUD for boards, scoped to boards the requesting user owns or is a member of."""
+
     http_method_names = ["get", "post", "patch", "delete"]
 
     def get_permissions(self):
@@ -72,6 +74,8 @@ class BoardViewSet(viewsets.ModelViewSet):
 
 
 class EmailCheckView(APIView):
+    """Looks up a registered user by email, e.g. to validate board invites."""
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -92,6 +96,8 @@ class TaskViewSet(
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
+    """Create/update/delete for tasks; there is no list/retrieve action here."""
+
     http_method_names = ["post", "patch", "delete"]
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
@@ -115,6 +121,8 @@ class TaskViewSet(
 
 
 class CommentListCreateView(generics.ListCreateAPIView):
+    """Lists and creates comments on a task, restricted to the task's board members."""
+
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated, IsNotGuest]
 
@@ -137,6 +145,8 @@ class CommentListCreateView(generics.ListCreateAPIView):
 
 
 class CommentDeleteView(generics.DestroyAPIView):
+    """Deletes a comment; only the comment's own author is allowed to."""
+
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated, IsCommentAuthor, IsNotGuest]
     lookup_url_kwarg = "comment_id"
@@ -146,6 +156,8 @@ class CommentDeleteView(generics.DestroyAPIView):
 
 
 class AssignedToMeView(generics.ListAPIView):
+    """Lists tasks where the requesting user is the assignee."""
+
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
 
@@ -154,6 +166,8 @@ class AssignedToMeView(generics.ListAPIView):
 
 
 class ReviewingView(generics.ListAPIView):
+    """Lists tasks where the requesting user is the reviewer."""
+
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
 

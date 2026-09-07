@@ -17,6 +17,8 @@ class IsNotGuest(BasePermission):
 
 
 class IsBoardMember(BasePermission):
+    """Grants access to a board's owner or any of its members."""
+
     def has_object_permission(self, request, view, obj):
         return (
             obj.owner_id == request.user.id
@@ -25,11 +27,15 @@ class IsBoardMember(BasePermission):
 
 
 class IsBoardOwner(BasePermission):
+    """Grants access only to a board's owner."""
+
     def has_object_permission(self, request, view, obj):
         return obj.owner_id == request.user.id
 
 
 class IsBoardMemberToCreateTask(BasePermission):
+    """Blocks task creation on a board the requesting user isn't a member of."""
+
     def has_permission(self, request, view):
         board = Board.objects.filter(pk=request.data.get("board")).first()
         if board is None:
@@ -41,6 +47,8 @@ class IsBoardMemberToCreateTask(BasePermission):
 
 
 class IsTaskBoardMember(BasePermission):
+    """Grants access to a task if the user is a member of the task's board."""
+
     def has_object_permission(self, request, view, obj):
         board = obj.board
         return (
@@ -50,6 +58,8 @@ class IsTaskBoardMember(BasePermission):
 
 
 class IsTaskCreatorOrBoardOwner(BasePermission):
+    """Grants access to a task's creator or the owner of its board."""
+
     def has_object_permission(self, request, view, obj):
         return (
             obj.created_by_id == request.user.id
@@ -58,5 +68,7 @@ class IsTaskCreatorOrBoardOwner(BasePermission):
 
 
 class IsCommentAuthor(BasePermission):
+    """Grants access only to the user who wrote the comment."""
+
     def has_object_permission(self, request, view, obj):
         return obj.author_id == request.user.id

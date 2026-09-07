@@ -7,6 +7,8 @@ from django.db import models
 
 
 class UserManager(BaseUserManager):
+    """Creates users with a normalized, lowercased email as the login identifier."""
+
     def create_user(self, email, fullname, password=None):
         if not email:
             raise ValueError("Users must have an email address")
@@ -24,6 +26,8 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
+    """Custom user model that authenticates via email instead of a username."""
+
     email = models.EmailField(unique=True)
     fullname = models.CharField(max_length=255)
     is_active = models.BooleanField(default=True)

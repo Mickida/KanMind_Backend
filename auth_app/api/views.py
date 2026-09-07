@@ -9,6 +9,7 @@ from auth_app.api.serializers import LoginSerializer, RegistrationSerializer
 
 
 def build_auth_payload(user):
+    """Builds the token + user info response shared by registration and login."""
     token, _ = Token.objects.get_or_create(user=user)
     return {
         "token": token.key,
@@ -19,6 +20,8 @@ def build_auth_payload(user):
 
 
 class RegistrationView(APIView):
+    """Creates a new user account and returns an auth token."""
+
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -29,6 +32,8 @@ class RegistrationView(APIView):
 
 
 class LoginView(APIView):
+    """Authenticates a user by email/password and returns an auth token."""
+
     permission_classes = [AllowAny]
 
     def post(self, request):

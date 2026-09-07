@@ -3,6 +3,8 @@ from django.db import models
 
 
 class Board(models.Model):
+    """A Kanban board owned by one user and shared with member users."""
+
     title = models.CharField(max_length=63)
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="owned_boards"
@@ -19,6 +21,8 @@ class Board(models.Model):
 
 
 class Task(models.Model):
+    """A single work item on a board, optionally assigned to a member and reviewer."""
+
     STATUS_CHOICES = [
         ("to-do", "To Do"),
         ("in-progress", "In Progress"),
@@ -63,6 +67,8 @@ class Task(models.Model):
 
 
 class Comment(models.Model):
+    """A comment left by a board member on a task."""
+
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="comments")
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="comments"
