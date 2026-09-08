@@ -19,19 +19,25 @@ source venv/Scripts/activate
 pip install -r requirements.txt
 ```
 
-3. Apply migrations:
+3. Create a `.env` file in the project root with a secret key:
+
+```
+SECRET_KEY=your-secret-key-here
+```
+
+4. Apply migrations:
 
 ```
 python manage.py migrate
 ```
 
-4. Create a superuser (optional, for /admin/):
+5. Create a superuser (optional, for /admin/):
 
 ```
 python manage.py createsuperuser
 ```
 
-5. Start the server:
+6. Start the server:
 
 ```
 python manage.py runserver
