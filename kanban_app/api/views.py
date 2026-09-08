@@ -1,6 +1,6 @@
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404
-from rest_framework import generics, mixins, status, viewsets
+from rest_framework import generics, status, viewsets
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -90,20 +90,23 @@ class EmailCheckView(APIView):
         return Response(UserShortSerializer(user).data, status=status.HTTP_200_OK)
 
 
-class TaskViewSet(
-    mixins.CreateModelMixin,
-    mixins.UpdateModelMixin,
-    mixins.DestroyModelMixin,
-    viewsets.GenericViewSet,
-):
-    """Create/update/delete for tasks; there is no list/retrieve action here."""
+class TaskViewSet(viewsets.ModelViewSet):
+    """CRUD for tasks; the list action is limited to tasks on boards the user belongs to."""
 
-    http_method_names = ["post", "patch", "delete"]
-    queryset = Task.objects.all()
+    http_method_names = ["get", "post", "patch", "delete"]
     serializer_class = TaskSerializer
+    queryset = Task.objects.all()
+
+    def get_queryset(self):
+        if self.action != "list":
+            return Task.objects.all()
+        user = self.request.user
+        return Task.objects.filter(
+            Q(board__owner=user) | Q(board__members=user)
+        ).distinct()
 
     def get_permissions(self):
-        if self.action == "partial_update":
+        if self.action in ("retrieve", "partial_update"):
             return [IsAuthenticated(), IsTaskBoardMember(), IsNotGuest()]
         if self.action == "destroy":
             return [IsAuthenticated(), IsTaskCreatorOrBoardOwner(), IsNotGuest()]

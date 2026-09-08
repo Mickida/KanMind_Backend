@@ -4,6 +4,8 @@ Backend for the KanMind Kanban board frontend, built with Django and Django REST
 
 ## Setup
 
+Requires Python to be installed on your system.
+
 1. Create and activate a virtual environment:
 
 ```
